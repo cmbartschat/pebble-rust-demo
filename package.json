@@ -1,0 +1,52 @@
+{
+    "author": "Christoph Bartschat",
+    "dependencies": {
+        "base-x": "^5.0.1",
+        "pebble-clay": "^1.0.0"
+    },
+    "keywords": [
+        "pebble-app"
+    ],
+    "name": "pebble-testapp",
+    "prettier": {
+        "singleQuote": true,
+        "semi": false,
+        "bracketSpacing": false,
+        "trailingComma": "es5"
+    },
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "Test App",
+        "enableMultiJS": true,
+        "messageKeys": [],
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/64sprites.png",
+                    "name": "SPRITES",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/icon.png",
+                    "menuIcon": true,
+                    "name": "MENU_ICON",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "emery"
+        ],
+        "uuid": "f1f90241-9a1b-4bd2-96ff-68e028f43083",
+        "watchapp": {
+            "watchface": false
+        }
+    },
+    "version": "1.0.1"
+}
