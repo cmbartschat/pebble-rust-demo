@@ -25,42 +25,45 @@ typedef struct {
 
 int extract_uint32(Tuple *t, uint32_t *target) {
   switch (t->type) {
-    case TUPLE_UINT:
-      switch (t->length) {
-        case 1:
-          *target = t->value->uint8;
-          return 0;
-        case 2:
-          *target = t->value->uint16;
-          return 0;
-        case 4:
-          *target = t->value->uint32;
-          return 0;
-        default:
-          return 1;
-      }
-
-    case TUPLE_INT:
-      switch (t->length) {
-        case 1:
-          if (t->value->int8 < 0) return 1;
-          *target = t->value->int8;
-          return 0;
-        case 2:
-          if (t->value->int16 < 0) return 1;
-          *target = t->value->int16;
-          return 0;
-
-        case 4:
-          if (t->value->int32 < 0) return 1;
-          s_cycles = t->value->int32;
-          return 0;
-        default:
-          return 1;
-      }
-
+  case TUPLE_UINT:
+    switch (t->length) {
+    case 1:
+      *target = t->value->uint8;
+      return 0;
+    case 2:
+      *target = t->value->uint16;
+      return 0;
+    case 4:
+      *target = t->value->uint32;
+      return 0;
     default:
       return 1;
+    }
+
+  case TUPLE_INT:
+    switch (t->length) {
+    case 1:
+      if (t->value->int8 < 0)
+        return 1;
+      *target = t->value->int8;
+      return 0;
+    case 2:
+      if (t->value->int16 < 0)
+        return 1;
+      *target = t->value->int16;
+      return 0;
+
+    case 4:
+      if (t->value->int32 < 0)
+        return 1;
+      s_cycles = t->value->int32;
+      return 0;
+    default:
+      return 1;
+    }
+
+  default:
+    return 1;
   }
 }
 
@@ -236,9 +239,13 @@ static void init() {
   s_tick_count = 0;
 
   s_main_window = window_create();
+  app_message_register_inbox_received(handle_app_message);
   app_message_open(app_message_inbox_size_maximum(),
                    app_message_outbox_size_maximum());
+
   window_set_background_color(s_main_window, GColorOxfordBlue);
+
+  APP_LOG(APP_LOG_LEVEL_DEBUG, "%p", main_window_load);
 
   window_set_window_handlers(
       s_main_window,
@@ -249,7 +256,6 @@ static void init() {
   update_bottom_row();
 
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
-  app_message_register_inbox_received(handle_app_message);
 }
 
 static void deinit() { window_destroy(s_main_window); }
