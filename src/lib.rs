@@ -5,6 +5,7 @@ extern crate alloc;
 
 mod app;
 mod flash;
+mod move_box;
 
 use crate::app::run_app;
 use pebble_rust_2026 as _;
