@@ -143,7 +143,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pebble_testapp"
+name = "pebble_rust_demo"
 version = "0.1.0"
 dependencies = [
  "pebble_rust_2026",

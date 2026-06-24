@@ -1,5 +1,5 @@
 [package]
-name = "pebble_testapp"
+name = "pebble_rust_demo" # When changing this, also change STLIB in wscript
 version = "0.1.0"
 edition = "2024"
 
@@ -10,8 +10,10 @@ doctest = false
 bench = false
 
 [dependencies]
-# pebble_rust_2026 = { git = "https://github.com/cmbartschat/pebble-rust-2026.git", rev = "763b62606401c028d988a9fbe0918072cda015d2" }
 pebble_rust_2026 = { path = "../pebble-rust-2026" }
+# This is set up for local development, to fetch from github use this format:
+# pebble_rust_2026 = { git = "https://github.com/cmbartschat/pebble-rust-2026.git", rev = "2aa7fa68b363019c94c85d28769cf1d0b9c5b661" }
+
 
 [profile.release]
 panic = "abort"

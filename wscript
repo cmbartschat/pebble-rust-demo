@@ -49,7 +49,7 @@ def build(ctx):
             "STLIBPATH",
             [ctx.path.abspath() + "/target/thumbv8m.main-none-eabi/release/"],
         )
-        ctx.env.append_value("STLIB", ["pebble_testapp"])
+        ctx.env.append_value("STLIB", ["pebble_rust_demo"])
 
         app_elf = "{}/pebble-app.elf".format(ctx.env.BUILD_DIR)
 
