@@ -3,7 +3,7 @@ use pebble_rust_2026::{
     APP, SimpleMenuItem, SimpleMenuLayer, SimpleMenuSection, Window, log_c_str,
 };
 
-use crate::{flash::flash, move_box::move_box};
+use crate::{draw_commands::draw_commands, flash::flash, move_box::move_box};
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
@@ -18,6 +18,15 @@ pub fn run_app() {
         log_c_str(c"selected option 2");
         APP.show(move_box());
     }));
+
+    options.push(SimpleMenuItem::new(
+        "Draw Commands",
+        None,
+        None,
+        move || {
+            APP.show(draw_commands());
+        },
+    ));
 
     let mut menu = SimpleMenuLayer::new(
         menu_window.get_bounds(),
