@@ -4,6 +4,7 @@
 extern crate alloc;
 
 mod app;
+mod bitmaps;
 mod draw_commands;
 mod flash;
 mod move_box;

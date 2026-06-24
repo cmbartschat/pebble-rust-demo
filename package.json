@@ -25,8 +25,8 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/64sprites.png",
-                    "name": "SPRITES",
+                    "file": "images/hero.png",
+                    "name": "HERO",
                     "targetPlatforms": null,
                     "type": "bitmap"
                 },
