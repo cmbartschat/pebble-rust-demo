@@ -1,0 +1,125 @@
+use core::{cell::RefCell, time::Duration};
+
+use alloc::{rc::Rc, vec::Vec};
+use pebble_rust_2026::{
+    ActionBarLayer, ActionButton, Angle, Bitmap, Button, GContext, GPoint, GRect, Layer, TextLayer,
+    Timer, Window,
+    color::{GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_WHITE},
+    resource_ids, sys,
+};
+
+struct SpinState {
+    goal_position: Angle,
+    current_position: Angle,
+}
+
+resource_ids!(resource_ids);
+
+extern "C" fn fill_circle(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
+    let mut ctx = GContext::from_raw(ctx).unwrap();
+    ctx.set_fill_color(GCOLOR_BLACK);
+    ctx.fill_circle(GPoint { x: 5, y: 5 }, 4);
+}
+
+pub fn spin() -> Window {
+    let mut window = Window::new().unwrap();
+    window.set_background_color(GCOLOR_WHITE);
+    let state = Rc::new(RefCell::new(SpinState {
+        goal_position: Angle::from_degrees(0),
+        current_position: Angle::from_degrees(0),
+    }));
+
+    let bounds = window.get_bounds();
+    let center_x = bounds.origin.x + bounds.size.w / 2 - 20;
+    let center_y = bounds.origin.y + bounds.size.h / 2;
+
+    let mut center_layer = Layer::new(bounds).unwrap();
+    window.add_child(&mut center_layer);
+
+    let mut circle_layers = Vec::with_capacity(8);
+
+    for _ in 0..8 {
+        let mut layer = Layer::new(GRect::new(0, 0, 10, 10)).unwrap();
+        layer.set_update_proc(fill_circle);
+        center_layer.add_child(&mut layer);
+        circle_layers.push(layer);
+    }
+
+    let update = {
+        let state = state.clone();
+        let mut window = window.downgrade();
+        move || {
+            if window.upgrade().is_none() {
+                return false;
+            }
+            let mut state = state.borrow_mut();
+            state.current_position = state
+                .current_position
+                .towards(state.goal_position, Angle::from_degrees(8));
+
+            let x_offset = state.current_position.cos().scale(80) as i16;
+            let y_offset = -state.current_position.sin().scale(80) as i16;
+
+            for (i, layer) in circle_layers.iter_mut().enumerate() {
+                let i = i as i16;
+                layer.set_frame(GRect::new(
+                    center_x + (x_offset * i) / 10,
+                    center_y + (y_offset * i) / 10,
+                    10,
+                    10,
+                ));
+            }
+            true
+        }
+    };
+    Timer::repeat(Duration::from_millis(30), update);
+
+    {
+        let mut action_bar = ActionBarLayer::new().unwrap();
+        action_bar.add_to_window(&mut window);
+
+        action_bar.set_icon(
+            ActionButton::Up,
+            Bitmap::from_resource(resource_ids::UP).unwrap(),
+        );
+
+        action_bar.set_icon(
+            ActionButton::Down,
+            Bitmap::from_resource(resource_ids::DOWN).unwrap(),
+        );
+
+        action_bar.set_click_provider({
+            let state = state.clone();
+            move |input| {
+                let v1 = state.clone();
+                input.single(
+                    Button::Up,
+                    move |_| {
+                        let mut value = v1.borrow_mut();
+                        value.goal_position += Angle::from_degrees(60);
+                    },
+                    None,
+                );
+
+                let v2 = state.clone();
+                input.single(
+                    Button::Down,
+                    move |_| {
+                        let mut value = v2.borrow_mut();
+                        value.goal_position -= Angle::from_degrees(60);
+                    },
+                    None,
+                );
+            }
+        });
+    }
+
+    {
+        let mut label_layer = TextLayer::new(GRect::new(10, 10, 100, 20)).unwrap();
+        label_layer.set_text_c_str(c"spin");
+        label_layer.set_background_color(GCOLOR_CLEAR);
+        window.add_child(&mut label_layer);
+    }
+
+    window
+}

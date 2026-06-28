@@ -31,6 +31,18 @@
                     "type": "bitmap"
                 },
                 {
+                    "file": "images/up.png",
+                    "name": "UP",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/down.png",
+                    "name": "DOWN",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/icon.png",
                     "menuIcon": true,
                     "name": "MENU_ICON",

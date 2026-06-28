@@ -3,12 +3,18 @@ use pebble_rust_2026::{
     APP, SimpleMenuItem, SimpleMenuLayer, SimpleMenuSection, Window, log_c_str,
 };
 
-use crate::{bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, move_box::move_box};
+use crate::{
+    bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, move_box::move_box, spin::spin,
+};
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
 
     let mut options = SimpleMenuSection::new_untitled();
+    options.push(SimpleMenuItem::new("Spin", None, None, move || {
+        APP.show(spin());
+    }));
+
     options.push(SimpleMenuItem::new("Flash", None, None, move || {
         log_c_str(c"selected option 1");
         APP.show(flash());
