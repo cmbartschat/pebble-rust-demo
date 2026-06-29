@@ -1,7 +1,7 @@
 use core::time::Duration;
 
 use pebble_rust_2026::{
-    Timer, Window,
+    StatusBarLayer, StatusBarSeparatorMode, Timer, Window,
     color::{
         GCOLOR_BLUE, GCOLOR_GREEN, GCOLOR_ORANGE, GCOLOR_PURPLE, GCOLOR_RED, GCOLOR_WHITE,
         GCOLOR_YELLOW,
@@ -11,6 +11,13 @@ use pebble_rust_2026::{
 pub fn flash() -> Window {
     let mut window = Window::new().unwrap();
     window.set_background_color(GCOLOR_WHITE);
+
+    {
+        let mut status_bar = StatusBarLayer::new().unwrap();
+        status_bar.set_separator_mode(StatusBarSeparatorMode::Dotted);
+        status_bar.set_colors(GCOLOR_BLUE, GCOLOR_WHITE);
+        window.add_child(&mut status_bar);
+    }
 
     let mut color_index: usize = 0;
     let colors = [
