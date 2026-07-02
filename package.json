@@ -43,6 +43,30 @@
                     "type": "bitmap"
                 },
                 {
+                    "file": "images/color.png",
+                    "name": "COLOR",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/bird1.png",
+                    "name": "BIRD1",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/bird2.png",
+                    "name": "BIRD2",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/bird3.png",
+                    "name": "BIRD3",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/icon.png",
                     "menuIcon": true,
                     "name": "MENU_ICON",

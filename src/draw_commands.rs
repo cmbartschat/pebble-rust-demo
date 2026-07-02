@@ -1,11 +1,40 @@
+use core::{cell::RefCell, time::Duration};
+
+use alloc::vec::Vec;
 use pebble_rust_2026::{
-    GContext, GPoint, GRect, Layer, Window,
+    Bitmap, Button, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer, Window,
     color::{
-        GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_VERY_LIGHT_BLUE,
-        GCOLOR_WHITE, GCOLOR_YELLOW,
+        GCOLOR_CLEAR, GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE,
+        GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
     },
-    sys,
+    resource_ids, sys,
 };
+
+struct Bird {
+    bounds: GRect,
+    sprite: Bitmap,
+}
+
+impl Bird {
+    pub fn new(center: GPoint, sprite: Bitmap) -> Self {
+        let bounds = sprite.get_bounds();
+        let bounds = GRect::new(
+            center.x - bounds.size.w / 2,
+            center.y - bounds.size.h / 2,
+            bounds.size.w,
+            bounds.size.h,
+        );
+        Self { bounds, sprite }
+    }
+    pub fn draw(&self, ctx: &mut GContext) {
+        ctx.set_compositing_mode(sys::GCompOp_GCompOpSet);
+        ctx.draw_bitmap(&self.sprite, self.bounds);
+    }
+}
+
+resource_ids!(resource_ids);
+
+static BIRDS: Mutex<RefCell<Vec<Bird>>> = Mutex::new(RefCell::new(Vec::new()));
 
 extern "C" fn draw_to_layer(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
     let mut ctx = GContext::from_raw(ctx).unwrap();
@@ -19,6 +48,12 @@ extern "C" fn draw_to_layer(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
     ctx.set_fill_color(GCOLOR_GREEN);
     ctx.fill_rect(GRect::new(0, 100, 200, 150));
 
+    MutexToken::with(|t| {
+        for fly in BIRDS.borrow(t).iter() {
+            fly.draw(&mut ctx);
+        }
+    });
+
     ctx.set_fill_color(GCOLOR_SUNSET_ORANGE);
     ctx.fill_round_rect(GRect::new(140, 100, 20, 100), 3);
 
@@ -30,11 +65,76 @@ pub fn draw_commands() -> Window {
     let mut window = Window::new().unwrap();
     window.set_background_color(GCOLOR_WHITE);
 
+    let mut custom_layer = Layer::new(window.get_bounds()).unwrap();
+    custom_layer.set_update_proc(draw_to_layer);
+    window.add_child(&mut custom_layer);
+
+    // {
+    //     let mut label_layer =
+    //         TextLayer::new(GRect::new(10, 10, 180, window.get_bounds().size.h - 20)).unwrap();
+    //     label_layer.set_text_c_str(c"draw commands - select to place bird");
+    //     label_layer.set_background_color(GCOLOR_CLEAR);
+    //     window.add_child(&mut label_layer);
+    // }
+
     {
-        let mut custom_layer = Layer::new(window.get_bounds()).unwrap();
-        custom_layer.set_update_proc(draw_to_layer);
-        window.add_child(&mut custom_layer);
+        let mut label_layer =
+            TextLayer::new(GRect::new(10, window.get_bounds().size.h - 40, 180, 40)).unwrap();
+        label_layer.set_text_c_str(c"draw commands\nselect to place bird");
+        label_layer.set_background_color(GCOLOR_CLEAR);
+        window.add_child(&mut label_layer);
     }
+
+    let weak_window = window.downgrade();
+    let bird_sprites = [
+        Bitmap::from_resource(resource_ids::BIRD1).unwrap(),
+        Bitmap::from_resource(resource_ids::BIRD2).unwrap(),
+        Bitmap::from_resource(resource_ids::BIRD3).unwrap(),
+    ];
+    window.set_click_provider(move |b| {
+        b.single(
+            Button::Select,
+            {
+                let weak_window = weak_window.clone();
+                let mut custom_layer = custom_layer.clone();
+                let bird_sprites = bird_sprites.clone();
+                move |_| {
+                    let Some(window) = weak_window.upgrade() else {
+                        return;
+                    };
+
+                    let sprite = bird_sprites
+                        [Random::new().uniform(bird_sprites.len() as u32) as usize]
+                        .clone();
+
+                    let mut bounds = window.get_bounds();
+                    bounds.size.h = 120;
+                    let excluded_bounds = GRect::new(120, 50, 60, 200);
+
+                    let position = loop {
+                        let position = GPoint {
+                            x: Random::new().uniform(bounds.size.w as u32) as i16 - 8,
+                            y: Random::new().uniform(120) as i16 - 8,
+                        };
+
+                        if !unsafe { sys::grect_contains_point(&excluded_bounds, &position) } {
+                            break position;
+                        }
+                    };
+
+                    MutexToken::with(|t| BIRDS.borrow_mut(t).push(Bird::new(position, sprite)));
+                    custom_layer.mark_dirty();
+                }
+            },
+            Some(Duration::from_millis(500)),
+        );
+    });
+
+    window.set_unload_handler(|| {
+        MutexToken::with(|t| {
+            BIRDS.borrow_mut(t).clear();
+        });
+    });
 
     window
 }

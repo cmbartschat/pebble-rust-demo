@@ -1,11 +1,19 @@
-use core::{cell::RefCell, time::Duration};
+use core::{
+    cell::{Cell, RefCell},
+    time::Duration,
+};
 
 use alloc::{rc::Rc, vec::Vec};
 use pebble_rust_2026::{
-    ActionBarLayer, ActionButton, Angle, Bitmap, Button, GContext, GPoint, GRect, Layer, TextLayer,
-    Timer, Window,
-    color::{GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_WHITE},
-    resource_ids, sys,
+    ActionBarLayer, ActionButton, ActionMenu, ActionMenuAlign, ActionMenuLevel,
+    ActionMenuLevelDisplayMode, Angle, Bitmap, Button, GContext, GPoint, GRect, Layer, Mutex,
+    TextLayer, Timer, Window,
+    color::{
+        GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_GREEN, GCOLOR_RED, GCOLOR_SHOCKING_PINK,
+        GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
+    },
+    resource_ids,
+    sys::{self, GColor},
 };
 
 struct SpinState {
@@ -15,10 +23,15 @@ struct SpinState {
 
 resource_ids!(resource_ids);
 
+static COLOR: Mutex<Cell<GColor>> = Mutex::new(Cell::new(GCOLOR_BLACK));
+
 extern "C" fn fill_circle(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
     let mut ctx = GContext::from_raw(ctx).unwrap();
-    ctx.set_fill_color(GCOLOR_BLACK);
+    ctx.set_fill_color(COLOR.get());
     ctx.fill_circle(GPoint { x: 5, y: 5 }, 4);
+
+    ctx.set_stroke_color(GCOLOR_BLACK);
+    ctx.draw_circle(GPoint { x: 5, y: 5 }, 4);
 }
 
 pub fn spin() -> Window {
@@ -47,7 +60,7 @@ pub fn spin() -> Window {
 
     let update = {
         let state = state.clone();
-        let mut window = window.downgrade();
+        let window = window.downgrade();
         move || {
             if window.upgrade().is_none() {
                 return false;
@@ -72,7 +85,7 @@ pub fn spin() -> Window {
             true
         }
     };
-    Timer::repeat(Duration::from_millis(30), update);
+    let timer = Timer::repeat(Duration::from_millis(30), update).unwrap();
 
     {
         let mut action_bar = ActionBarLayer::new().unwrap();
@@ -86,6 +99,11 @@ pub fn spin() -> Window {
         action_bar.set_icon(
             ActionButton::Down,
             Bitmap::from_resource(resource_ids::DOWN).unwrap(),
+        );
+
+        action_bar.set_icon(
+            ActionButton::Select,
+            Bitmap::from_resource(resource_ids::COLOR).unwrap(),
         );
 
         action_bar.set_click_provider({
@@ -110,6 +128,28 @@ pub fn spin() -> Window {
                     },
                     None,
                 );
+
+                input.single(
+                    Button::Select,
+                    move |_| {
+                        let mut level = ActionMenuLevel::new();
+                        level.add_action("Black", move || COLOR.set(GCOLOR_BLACK));
+                        level.add_action("White", move || COLOR.set(GCOLOR_WHITE));
+                        let mut color_level = ActionMenuLevel::new();
+
+                        color_level.add_action("Pink", move || COLOR.set(GCOLOR_SHOCKING_PINK));
+                        color_level.add_action("Blue", move || COLOR.set(GCOLOR_VERY_LIGHT_BLUE));
+                        color_level.add_action("Red", move || COLOR.set(GCOLOR_RED));
+                        color_level.add_action("Yellow", move || COLOR.set(GCOLOR_YELLOW));
+                        color_level.add_action("Green", move || COLOR.set(GCOLOR_GREEN));
+                        color_level.set_display_mode(ActionMenuLevelDisplayMode::Thin);
+                        level.add_child("More Colors...", color_level);
+                        ActionMenu::begin(level)
+                            .set_align(ActionMenuAlign::Center)
+                            .open();
+                    },
+                    None,
+                );
             }
         });
     }
@@ -120,6 +160,13 @@ pub fn spin() -> Window {
         label_layer.set_background_color(GCOLOR_CLEAR);
         window.add_child(&mut label_layer);
     }
+
+    let timer = Cell::new(Some(timer));
+    window.set_unload_handler(move || {
+        if let Some(e) = timer.replace(None) {
+            e.cancel()
+        }
+    });
 
     window
 }

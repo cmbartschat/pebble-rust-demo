@@ -31,7 +31,7 @@ pub fn flash() -> Window {
 
     window.set_background_color(colors[0]);
 
-    let mut window_ref = window.downgrade();
+    let window_ref = window.downgrade();
     Timer::repeat(Duration::from_secs(1), move || {
         let Some(mut window) = window_ref.upgrade() else {
             return false;
