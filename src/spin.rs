@@ -161,11 +161,8 @@ pub fn spin() -> Window {
         window.add_child(&mut label_layer);
     }
 
-    let timer = Cell::new(Some(timer));
     window.set_unload_handler(move || {
-        if let Some(e) = timer.replace(None) {
-            e.cancel()
-        }
+        timer.cancel();
     });
 
     window

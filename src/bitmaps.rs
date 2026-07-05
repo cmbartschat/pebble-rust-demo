@@ -1,5 +1,6 @@
 use core::time::Duration;
 
+use alloc::vec::Vec;
 use pebble_rust_2026::{
     Bitmap, BitmapLayer, GRect, Timer, Window, color::GCOLOR_WHITE, resource_ids,
 };
@@ -16,6 +17,8 @@ pub fn bitmaps() -> Window {
     let center_y = bounds.size.h / 2 - 8;
     let spacing = 40;
 
+    let mut timers = Vec::new();
+
     // Walking
     {
         let frames = [
@@ -30,11 +33,14 @@ pub fn bitmaps() -> Window {
         window.add_child(&mut layer);
         let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        Timer::repeat(Duration::from_millis(100), move || {
-            frame = (frame + 1) % frames.len();
-            layer.set_bitmap(&frames[frame]);
-            true
-        });
+        timers.push(
+            Timer::repeat(Duration::from_millis(100), move || {
+                frame = (frame + 1) % frames.len();
+                layer.set_bitmap(&frames[frame]);
+                true
+            })
+            .unwrap(),
+        );
     }
 
     // Swimming
@@ -51,11 +57,14 @@ pub fn bitmaps() -> Window {
         window.add_child(&mut layer);
         let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        Timer::repeat(Duration::from_millis(100), move || {
-            frame = (frame + 1) % frames.len();
-            layer.set_bitmap(&frames[frame]);
-            true
-        });
+        timers.push(
+            Timer::repeat(Duration::from_millis(100), move || {
+                frame = (frame + 1) % frames.len();
+                layer.set_bitmap(&frames[frame]);
+                true
+            })
+            .unwrap(),
+        );
     }
 
     // Fighting
@@ -72,12 +81,19 @@ pub fn bitmaps() -> Window {
         window.add_child(&mut layer);
         let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        Timer::repeat(Duration::from_millis(100), move || {
-            frame = (frame + 1) % frames.len();
-            layer.set_bitmap(&frames[frame]);
-            true
-        });
+        timers.push(
+            Timer::repeat(Duration::from_millis(100), move || {
+                frame = (frame + 1) % frames.len();
+                layer.set_bitmap(&frames[frame]);
+                true
+            })
+            .unwrap(),
+        );
     }
+
+    window.set_unload_handler(move || {
+        timers.into_iter().for_each(|e| e.cancel());
+    });
 
     window
 }
