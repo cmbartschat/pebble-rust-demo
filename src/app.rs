@@ -5,12 +5,16 @@ use pebble_rust_2026::{
 
 use crate::{
     bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, move_box::move_box, spin::spin,
+    time::time,
 };
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
 
     let mut options = SimpleMenuSection::new_untitled();
+    options.push(SimpleMenuItem::new("Time", None, None, move || {
+        APP.show(time());
+    }));
     options.push(SimpleMenuItem::new("Spin", None, None, move || {
         APP.show(spin());
     }));

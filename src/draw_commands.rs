@@ -2,7 +2,8 @@ use core::{cell::RefCell, time::Duration};
 
 use alloc::vec::Vec;
 use pebble_rust_2026::{
-    Bitmap, Button, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer, Window,
+    Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer,
+    Window,
     color::{
         GCOLOR_CLEAR, GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE,
         GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
@@ -27,7 +28,7 @@ impl Bird {
         Self { bounds, sprite }
     }
     pub fn draw(&self, ctx: &mut GContext) {
-        ctx.set_compositing_mode(sys::GCompOp_GCompOpSet);
+        ctx.set_compositing_mode(CompOp::Set);
         ctx.draw_bitmap(&self.sprite, self.bounds);
     }
 }
