@@ -7,6 +7,7 @@ mod app;
 mod bitmaps;
 mod draw_commands;
 mod flash;
+mod heap;
 mod move_box;
 mod spin;
 mod time;

@@ -4,14 +4,17 @@ use pebble_rust_2026::{
 };
 
 use crate::{
-    bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, move_box::move_box, spin::spin,
-    time::time,
+    bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, heap::heap, move_box::move_box,
+    spin::spin, time::time,
 };
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
 
     let mut options = SimpleMenuSection::new_untitled();
+    options.push(SimpleMenuItem::new("Heap", None, None, move || {
+        APP.show(heap());
+    }));
     options.push(SimpleMenuItem::new("Time", None, None, move || {
         APP.show(time());
     }));
