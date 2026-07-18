@@ -4,11 +4,8 @@ use alloc::vec::Vec;
 use pebble_rust_2026::{
     Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer,
     Window,
-    color::{
-        GCOLOR_CLEAR, GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE,
-        GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
-    },
-    resource_ids, sys,
+    color::{GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_WHITE},
+    hex_color, resource_ids, sys,
 };
 
 struct Bird {
@@ -40,10 +37,10 @@ static BIRDS: Mutex<RefCell<Vec<Bird>>> = Mutex::new(RefCell::new(Vec::new()));
 extern "C" fn draw_to_layer(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
     let mut ctx = GContext::from_raw(ctx).unwrap();
 
-    ctx.set_fill_color(GCOLOR_VERY_LIGHT_BLUE);
+    ctx.set_fill_color(hex_color!("#aff"));
     ctx.fill_rect(GRect::new(0, 0, 200, 100));
 
-    ctx.set_fill_color(GCOLOR_YELLOW);
+    ctx.set_fill_color(hex_color!("#ffff00"));
     ctx.fill_circle(GPoint { x: 50, y: 50 }, 25);
 
     ctx.set_fill_color(GCOLOR_GREEN);
@@ -70,19 +67,11 @@ pub fn draw_commands() -> Window {
     custom_layer.set_update_proc(draw_to_layer);
     window.add_child(&mut custom_layer);
 
-    // {
-    //     let mut label_layer =
-    //         TextLayer::new(GRect::new(10, 10, 180, window.get_bounds().size.h - 20)).unwrap();
-    //     label_layer.set_text_c_str(c"draw commands - select to place bird");
-    //     label_layer.set_background_color(GCOLOR_CLEAR);
-    //     window.add_child(&mut label_layer);
-    // }
-
     {
         let mut label_layer =
             TextLayer::new(GRect::new(10, window.get_bounds().size.h - 40, 180, 40)).unwrap();
         label_layer.set_text_c_str(c"draw commands\nselect to place bird");
-        label_layer.set_background_color(GCOLOR_CLEAR);
+        label_layer.set_background_color(hex_color!("#0000"));
         window.add_child(&mut label_layer);
     }
 

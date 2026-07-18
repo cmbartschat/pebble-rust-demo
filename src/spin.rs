@@ -12,7 +12,7 @@ use pebble_rust_2026::{
         GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_GREEN, GCOLOR_RED, GCOLOR_SHOCKING_PINK,
         GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
     },
-    resource_ids,
+    hex_color, resource_ids,
     sys::{self, GColor},
 };
 
@@ -36,7 +36,7 @@ extern "C" fn fill_circle(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
 
 pub fn spin() -> Window {
     let mut window = Window::new().unwrap();
-    window.set_background_color(GCOLOR_WHITE);
+    window.set_background_color(hex_color!("#fff"));
     let state = Rc::new(RefCell::new(SpinState {
         goal_position: Angle::from_degrees(0),
         current_position: Angle::from_degrees(0),

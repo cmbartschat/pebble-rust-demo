@@ -6,11 +6,12 @@ use pebble_rust_2026::{
         GCOLOR_BLUE, GCOLOR_GREEN, GCOLOR_ORANGE, GCOLOR_PURPLE, GCOLOR_RED, GCOLOR_WHITE,
         GCOLOR_YELLOW,
     },
+    hex_color,
 };
 
 pub fn flash() -> Window {
     let mut window = Window::new().unwrap();
-    window.set_background_color(GCOLOR_WHITE);
+    window.set_background_color(hex_color!("#ffffff"));
 
     {
         let mut status_bar = StatusBarLayer::new().unwrap();
