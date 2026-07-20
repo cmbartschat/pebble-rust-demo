@@ -9,6 +9,8 @@ mod draw_commands;
 mod flash;
 mod heap;
 mod move_box;
+mod nested_window;
+mod scroll;
 mod spin;
 mod time;
 

@@ -5,13 +5,19 @@ use pebble_rust_2026::{
 
 use crate::{
     bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, heap::heap, move_box::move_box,
-    spin::spin, time::time,
+    nested_window::nested_window, scroll::scroll, spin::spin, time::time,
 };
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
 
     let mut options = SimpleMenuSection::new_untitled();
+    options.push(SimpleMenuItem::new("Nested", None, None, move || {
+        APP.show(nested_window(0));
+    }));
+    options.push(SimpleMenuItem::new("Scroll", None, None, move || {
+        APP.show(scroll());
+    }));
     options.push(SimpleMenuItem::new("Heap", None, None, move || {
         APP.show(heap());
     }));
