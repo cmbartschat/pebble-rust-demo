@@ -2,8 +2,8 @@ use core::{cell::RefCell, time::Duration};
 
 use alloc::vec::Vec;
 use pebble_rust_2026::{
-    Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer,
-    Window,
+    Bitmap, Button, CompOp, ContentIndicator, ContentIndicatorConfig, ContentIndicatorDirection,
+    GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer, Window,
     color::{GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_WHITE},
     hex_color, resource_ids, sys,
 };
@@ -65,14 +65,14 @@ pub fn draw_commands() -> Window {
 
     let mut custom_layer = Layer::new(window.get_bounds()).unwrap();
     custom_layer.set_update_proc(draw_to_layer);
-    window.add_child(&mut custom_layer);
+    // window.add_child(&mut custom_layer);
 
     {
         let mut label_layer =
             TextLayer::new(GRect::new(10, window.get_bounds().size.h - 40, 180, 40)).unwrap();
         label_layer.set_text_c_str(c"draw commands\nselect to place bird");
         label_layer.set_background_color(hex_color!("#0000"));
-        window.add_child(&mut label_layer);
+        // window.add_child(&mut label_layer);
     }
 
     let weak_window = window.downgrade();
@@ -120,10 +120,36 @@ pub fn draw_commands() -> Window {
         );
     });
 
+    let mut indicator = ContentIndicator::new().unwrap();
+
+    let mut down_layer = Layer::new(GRect::new(0, 60, 60, 60)).unwrap();
+    window.add_child(&mut down_layer);
+
+    let mut up_layer = Layer::new(GRect::new(0, 0, 60, 60)).unwrap();
+    window.add_child(&mut up_layer);
+
+    indicator
+        .configure_direction(
+            ContentIndicatorDirection::Down,
+            ContentIndicatorConfig::basic(down_layer),
+        )
+        .unwrap();
+
+    indicator
+        .configure_direction(
+            ContentIndicatorDirection::Up,
+            ContentIndicatorConfig::basic(up_layer),
+        )
+        .unwrap();
+
+    indicator.set_content_available(ContentIndicatorDirection::Up, true);
+    indicator.set_content_available(ContentIndicatorDirection::Down, true);
+
     window.set_unload_handler(|| {
         MutexToken::with(|t| {
             BIRDS.borrow_mut(t).clear();
         });
+        drop(indicator);
     });
 
     window

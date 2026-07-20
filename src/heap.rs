@@ -28,7 +28,7 @@ pub fn heap() -> Window {
 
     update();
 
-    let timer = Timer::repeat(Duration::from_secs(3), update).unwrap();
+    let timer = Timer::repeat(Duration::from_millis(300), update).unwrap();
 
     window.set_unload_handler(|| {
         timer.cancel();

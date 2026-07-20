@@ -4,14 +4,21 @@ use pebble_rust_2026::{
 };
 
 use crate::{
-    bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, heap::heap, move_box::move_box,
-    spin::spin, time::time,
+    bitmaps::bitmaps, content_indicator::content_indicator, draw_commands::draw_commands,
+    flash::flash, heap::heap, move_box::move_box, scroll::scroll, spin::spin, time::time,
+    unsafe_content_indicator::unsafe_content_indicator,
 };
 
 pub fn run_app() {
     let mut menu_window = Window::new().unwrap();
 
     let mut options = SimpleMenuSection::new_untitled();
+    options.push(SimpleMenuItem::new("Content", None, None, move || {
+        APP.show(content_indicator());
+    }));
+    options.push(SimpleMenuItem::new("Scroll", None, None, move || {
+        APP.show(scroll());
+    }));
     options.push(SimpleMenuItem::new("Heap", None, None, move || {
         APP.show(heap());
     }));
@@ -54,6 +61,8 @@ pub fn run_app() {
     menu_window.add_child(&mut menu);
 
     APP.show(menu_window);
+    // APP.show(content_indicator());
+    // unsafe_content_indicator();
 
     APP.event_loop();
 
