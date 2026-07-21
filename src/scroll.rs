@@ -54,7 +54,6 @@ pub fn scroll() -> Window {
     window.add_child(&mut scroll);
     window.add_child(&mut up_layer);
     window.add_child(&mut down_layer);
-
     scroll.with_content_indicator(|indicator| {
         indicator
             .configure_direction(
@@ -72,22 +71,28 @@ pub fn scroll() -> Window {
     });
 
     scroll.set_content_size(GSize::new(200, offset_y));
-    scroll.set_click_config_onto_window(&mut window);
 
+    scroll.set_click_config_onto_window(&mut window);
     scroll.set_click_provider({
-        let scroll = scroll.clone();
+        let scroll = scroll.downgrade();
         move |c| {
-            c.single(
-                Button::Select,
-                {
-                    let mut scroll = scroll.clone();
-                    move |_| {
-                        let hidden = !scroll.get_paging();
-                        scroll.set_paging(hidden);
-                    }
-                },
-                None,
-            );
+            if true {
+                c.single(
+                    Button::Select,
+                    {
+                        let scroll = scroll.clone();
+                        move |_| {
+                            let Some(mut scroll) = scroll.upgrade() else {
+                                log_c_str(c"Unexpected: Scroll failed to upgrade");
+                                return;
+                            };
+                            let hidden = !scroll.get_paging();
+                            scroll.set_paging(hidden);
+                        }
+                    },
+                    None,
+                );
+            }
         }
     });
 

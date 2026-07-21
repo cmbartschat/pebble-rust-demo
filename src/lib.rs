@@ -13,6 +13,7 @@ mod nested_window;
 mod scroll;
 mod spin;
 mod time;
+mod windows;
 
 use crate::app::run_app;
 use pebble_rust_2026 as _;

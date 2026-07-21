@@ -1,11 +1,11 @@
 use core::time::Duration;
 
-use pebble_rust_2026::{Button, GRect, TextLayer, Timer, Window, color::GCOLOR_WHITE, fmt, heap};
-
-use crate::{
-    bitmaps::bitmaps, draw_commands::draw_commands, flash::flash, move_box::move_box,
-    nested_window::nested_window, scroll::scroll,
+use alloc::{boxed::Box, vec};
+use pebble_rust_2026::{
+    APP, Button, GRect, TextLayer, Timer, Window, color::GCOLOR_WHITE, fmt, heap,
 };
+
+use crate::windows::WINDOWS;
 
 pub fn heap() -> Window {
     let mut window = Window::new().unwrap();
@@ -20,9 +20,9 @@ pub fn heap() -> Window {
     let mut total_layer = TextLayer::new(GRect::new(0, 60, 200, 30)).unwrap();
     window.add_child(&mut total_layer);
 
-    let mut controls_layer = TextLayer::new(GRect::new(0, 90, 200, 30)).unwrap();
-    window.add_child(&mut controls_layer);
-    controls_layer.set_text_c_str(c"press select to allocate");
+    let mut instruction_layer = TextLayer::new(GRect::new(0, 90, 200, 100)).unwrap();
+    instruction_layer.set_text_c_str(c"Press Up to init\nPress Select to mount");
+    window.add_child(&mut instruction_layer);
 
     let mut update = move || {
         let used = heap::bytes_used();
@@ -37,26 +37,48 @@ pub fn heap() -> Window {
 
     update();
 
-    let timer = Timer::repeat(Duration::from_millis(300), update).unwrap();
-
     window.set_click_provider(|b| {
+        b.single(
+            Button::Up,
+            |_| {
+                for (_, f) in WINDOWS {
+                    f();
+                }
+            },
+            None,
+        );
         b.single(
             Button::Select,
             |_| {
-                drop(scroll());
-                drop(nested_window(0));
-                drop(draw_commands());
-                drop(flash());
-                drop(bitmaps());
-                drop(move_box());
+                let mut windows = vec![];
+                for (_, f) in WINDOWS {
+                    windows.push(f());
+                }
+
+                windows.reverse();
+
+                for w in windows.iter_mut() {
+                    APP.show_immediate(w.retain());
+                }
+
+                Timer::once(Duration::from_millis(1000), move || {
+                    for mut w in windows.into_iter() {
+                        APP.hide_immediate(&mut w);
+                    }
+                });
             },
             None,
         );
     });
 
-    window.set_unload_handler(|| {
-        timer.cancel();
-    });
+    window.set_appear_effect(Box::new(move || {
+        Box::new({
+            let timer = Timer::repeat(Duration::from_millis(300), update.clone()).unwrap();
+            Box::new(move || {
+                timer.cancel();
+            })
+        })
+    }));
 
     window
 }

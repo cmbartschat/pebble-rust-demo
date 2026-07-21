@@ -1,0 +1,15 @@
+use pebble_rust_2026::Window;
+
+type WindowInfo = (&'static str, fn() -> Window);
+
+pub static WINDOWS: [WindowInfo; 9] = [
+    ("Heap", crate::heap::heap),
+    ("Nested", crate::nested_window::nested_window),
+    ("Scroll", crate::scroll::scroll),
+    ("Time", crate::time::time),
+    ("Spin", crate::spin::spin),
+    ("Flash", crate::flash::flash),
+    ("Move Box", crate::move_box::move_box),
+    ("Draw Commands", crate::draw_commands::draw_commands),
+    ("Bitmaps", crate::bitmaps::bitmaps),
+];

@@ -17,7 +17,10 @@ pebble_rust_2026 = { path = "../pebble-rust-2026" }
 
 [profile.release]
 panic = "abort"
-opt-level = 2
+opt-level = "s"
+strip = true
+lto = true
+codegen-units = 1
 
 [profile.dev]
 panic = "abort"

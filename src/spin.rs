@@ -3,7 +3,7 @@ use core::{
     time::Duration,
 };
 
-use alloc::{rc::Rc, vec::Vec};
+use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
     ActionBarLayer, ActionButton, ActionMenu, ActionMenuAlign, ActionMenuLevel,
     ActionMenuLevelDisplayMode, Angle, Bitmap, Button, GContext, GPoint, GRect, Layer, Mutex,
@@ -85,7 +85,6 @@ pub fn spin() -> Window {
             true
         }
     };
-    let timer = Timer::repeat(Duration::from_millis(30), update).unwrap();
 
     {
         let mut action_bar = ActionBarLayer::new().unwrap();
@@ -161,9 +160,12 @@ pub fn spin() -> Window {
         window.add_child(&mut label_layer);
     }
 
-    window.set_unload_handler(move || {
-        timer.cancel();
-    });
+    window.set_appear_effect(Box::new(move || {
+        let timer = Timer::repeat(Duration::from_millis(300), update.clone()).unwrap();
+        Box::new(move || {
+            timer.cancel();
+        })
+    }));
 
     window
 }

@@ -1,6 +1,6 @@
 use core::time::Duration;
 
-use alloc::vec::Vec;
+use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
     Bitmap, BitmapLayer, GRect, Timer, Window, color::GCOLOR_WHITE, resource_ids,
 };
@@ -17,7 +17,7 @@ pub fn bitmaps() -> Window {
     let center_y = bounds.size.h / 2 - 8;
     let spacing = 40;
 
-    let mut timers = Vec::new();
+    let mut animations = Vec::new();
 
     // Walking
     {
@@ -31,16 +31,8 @@ pub fn bitmaps() -> Window {
         ];
         let mut layer = BitmapLayer::new(GRect::new(x, center_y - spacing, 16, 16)).unwrap();
         window.add_child(&mut layer);
-        let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        timers.push(
-            Timer::repeat(Duration::from_millis(100), move || {
-                frame = (frame + 1) % frames.len();
-                layer.set_bitmap(&frames[frame]);
-                true
-            })
-            .unwrap(),
-        );
+        animations.push((frames, layer));
     }
 
     // Swimming
@@ -55,16 +47,8 @@ pub fn bitmaps() -> Window {
         ];
         let mut layer = BitmapLayer::new(GRect::new(x, center_y, 16, 16)).unwrap();
         window.add_child(&mut layer);
-        let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        timers.push(
-            Timer::repeat(Duration::from_millis(100), move || {
-                frame = (frame + 1) % frames.len();
-                layer.set_bitmap(&frames[frame]);
-                true
-            })
-            .unwrap(),
-        );
+        animations.push((frames, layer));
     }
 
     // Fighting
@@ -79,21 +63,30 @@ pub fn bitmaps() -> Window {
         ];
         let mut layer = BitmapLayer::new(GRect::new(x, center_y + spacing, 16, 16)).unwrap();
         window.add_child(&mut layer);
-        let mut frame = 0;
         layer.set_bitmap(&frames[0]);
-        timers.push(
-            Timer::repeat(Duration::from_millis(100), move || {
-                frame = (frame + 1) % frames.len();
-                layer.set_bitmap(&frames[frame]);
-                true
-            })
-            .unwrap(),
-        );
+        animations.push((frames, layer));
     }
 
-    window.set_unload_handler(move || {
-        timers.into_iter().for_each(|e| e.cancel());
-    });
+    window.set_appear_effect(Box::new(move || {
+        let timers: Vec<Timer> = animations
+            .iter()
+            .map(|(frames, layer)| {
+                let frames = frames.clone();
+                let mut layer = layer.clone();
+                let mut frame = 0;
+                Timer::repeat(Duration::from_millis(100), move || {
+                    frame = (frame + 1) % frames.len();
+                    layer.set_bitmap(&frames[frame]);
+                    true
+                })
+                .unwrap()
+            })
+            .collect();
+
+        Box::new(|| {
+            timers.into_iter().for_each(|e| e.cancel());
+        })
+    }));
 
     window
 }

@@ -1,5 +1,6 @@
 use core::time::Duration;
 
+use alloc::boxed::Box;
 use pebble_rust_2026::{
     StatusBarLayer, StatusBarSeparatorMode, Timer, Window,
     color::{
@@ -33,19 +34,23 @@ pub fn flash() -> Window {
     window.set_background_color(colors[0]);
 
     let window_ref = window.downgrade();
-    let timer = Timer::repeat(Duration::from_secs(1), move || {
-        let Some(mut window) = window_ref.upgrade() else {
-            return false;
-        };
-        color_index = (color_index + 1) % colors.len();
-        window.set_background_color(colors[color_index]);
-        true
-    })
-    .unwrap();
 
-    window.set_unload_handler(move || {
-        timer.cancel();
-    });
+    window.set_appear_effect(Box::new(move || {
+        let window_ref = window_ref.clone();
+        let timer = Timer::repeat(Duration::from_secs(1), move || {
+            let Some(mut window) = window_ref.upgrade() else {
+                return false;
+            };
+            color_index = (color_index + 1) % colors.len();
+            window.set_background_color(colors[color_index]);
+            true
+        })
+        .unwrap();
+
+        Box::new(move || {
+            timer.cancel();
+        })
+    }));
 
     window
 }
