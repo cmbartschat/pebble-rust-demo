@@ -1,9 +1,9 @@
 use core::{cell::RefCell, time::Duration};
 
-use alloc::vec::Vec;
+use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
-    Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random, TextLayer,
-    Window,
+    APP, Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random,
+    TextLayer, TouchEvent, Window,
     color::{GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_WHITE},
     hex_color, resource_ids, sys,
 };
@@ -70,7 +70,11 @@ pub fn draw_commands() -> Window {
     {
         let mut label_layer =
             TextLayer::new(GRect::new(10, window.get_bounds().size.h - 40, 180, 40)).unwrap();
-        label_layer.set_text_c_str(c"draw commands\nselect to place bird");
+        if APP.touch.is_enabled() {
+            label_layer.set_text_c_str(c"draw commands\nselect or tap to place bird");
+        } else {
+            label_layer.set_text_c_str(c"draw commands\nselect to place bird");
+        }
         label_layer.set_background_color(hex_color!("#0000"));
         window.add_child(&mut label_layer);
     }
@@ -81,44 +85,65 @@ pub fn draw_commands() -> Window {
         Bitmap::from_resource(resource_ids::BIRD2).unwrap(),
         Bitmap::from_resource(resource_ids::BIRD3).unwrap(),
     ];
-    window.set_click_provider(move |b| {
-        b.single(
-            Button::Select,
-            {
-                let weak_window = weak_window.clone();
-                let mut custom_layer = custom_layer.clone();
-                let bird_sprites = bird_sprites.clone();
-                move |_| {
-                    let Some(window) = weak_window.upgrade() else {
-                        return;
-                    };
 
-                    let sprite = bird_sprites
-                        [Random::new().uniform(bird_sprites.len() as u32) as usize]
-                        .clone();
+    let push_bird = Rc::new(RefCell::new(move |position: GPoint| {
+        let sprite =
+            bird_sprites[Random::new().uniform(bird_sprites.len() as u32) as usize].clone();
 
-                    let mut bounds = window.get_bounds();
-                    bounds.size.h = 120;
-                    let excluded_bounds = GRect::new(120, 50, 60, 200);
+        MutexToken::with(|t| BIRDS.borrow_mut(t).push(Bird::new(position, sprite)));
+        custom_layer.mark_dirty();
+    }));
 
-                    let position = loop {
-                        let position = GPoint {
-                            x: Random::new().uniform(bounds.size.w as u32) as i16 - 8,
-                            y: Random::new().uniform(120) as i16 - 8,
+    let push_bird_1 = push_bird.clone();
+    window.set_click_provider({
+        move |b| {
+            let push_bird = push_bird_1.clone();
+            b.single(
+                Button::Select,
+                {
+                    let weak_window = weak_window.clone();
+                    move |_| {
+                        let Some(window) = weak_window.upgrade() else {
+                            return;
                         };
 
-                        if !unsafe { sys::grect_contains_point(&excluded_bounds, &position) } {
-                            break position;
-                        }
-                    };
+                        let mut bounds = window.get_bounds();
+                        bounds.size.h = 120;
+                        let excluded_bounds = GRect::new(120, 50, 60, 200);
 
-                    MutexToken::with(|t| BIRDS.borrow_mut(t).push(Bird::new(position, sprite)));
-                    custom_layer.mark_dirty();
-                }
-            },
-            Some(Duration::from_millis(500)),
-        );
+                        let position = loop {
+                            let position = GPoint {
+                                x: Random::new().uniform(bounds.size.w as u32) as i16 - 8,
+                                y: Random::new().uniform(120) as i16 - 8,
+                            };
+
+                            if !unsafe { sys::grect_contains_point(&excluded_bounds, &position) } {
+                                break position;
+                            }
+                        };
+
+                        (push_bird.borrow_mut())(position);
+                    }
+                },
+                Some(Duration::from_millis(500)),
+            );
+        }
     });
+
+    window.set_appear_effect(Box::new(move || {
+        APP.touch.subscribe(Box::new({
+            let push_bird = push_bird.clone();
+            move |event| {
+                if let TouchEvent::TouchDown(position) = event {
+                    (push_bird.borrow_mut())(position);
+                };
+            }
+        }));
+
+        Box::new(|| {
+            APP.touch.unsubscribe();
+        })
+    }));
 
     window.set_unload_handler(|| {
         MutexToken::with(|t| {
