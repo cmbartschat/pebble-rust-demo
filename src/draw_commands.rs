@@ -117,7 +117,7 @@ pub fn draw_commands() -> Window {
                                 y: Random::new().uniform(120) as i16 - 8,
                             };
 
-                            if !unsafe { sys::grect_contains_point(&excluded_bounds, &position) } {
+                            if !excluded_bounds.contains_point(position) {
                                 break position;
                             }
                         };

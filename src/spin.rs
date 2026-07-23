@@ -6,14 +6,13 @@ use core::{
 use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
     APP, ActionBarLayer, ActionButton, ActionMenu, ActionMenuAlign, ActionMenuLevel,
-    ActionMenuLevelDisplayMode, Angle, Bitmap, Button, CompassHeading, GContext, GPoint, GRect,
-    GSize, Layer, Mutex, TextLayer, Timer, Window,
+    ActionMenuLevelDisplayMode, Angle, Bitmap, Button, CompassHeading, GColor, GContext, GPoint,
+    GRect, GSize, Layer, Mutex, TextLayer, Timer, Window,
     color::{
         GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_GREEN, GCOLOR_RED, GCOLOR_SHOCKING_PINK,
         GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
     },
-    hex_color, log_c_str, resource_ids,
-    sys::{self, GColor},
+    hex_color, log_c_str, resource_ids, sys,
 };
 
 struct SpinState {
