@@ -5,14 +5,14 @@ use core::{
 
 use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
-    ActionBarLayer, ActionButton, ActionMenu, ActionMenuAlign, ActionMenuLevel,
-    ActionMenuLevelDisplayMode, Angle, Bitmap, Button, GContext, GPoint, GRect, Layer, Mutex,
-    TextLayer, Timer, Window,
+    APP, ActionBarLayer, ActionButton, ActionMenu, ActionMenuAlign, ActionMenuLevel,
+    ActionMenuLevelDisplayMode, Angle, Bitmap, Button, CompassHeading, GContext, GPoint, GRect,
+    GSize, Layer, Mutex, TextLayer, Timer, Window,
     color::{
         GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_GREEN, GCOLOR_RED, GCOLOR_SHOCKING_PINK,
         GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
     },
-    hex_color, resource_ids,
+    hex_color, log_c_str, resource_ids,
     sys::{self, GColor},
 };
 
@@ -57,6 +57,15 @@ pub fn spin() -> Window {
         center_layer.add_child(&mut layer);
         circle_layers.push(layer);
     }
+
+    let compass_layer_bounds = window.get_bounds().shrink(15);
+
+    let compass_layer = {
+        let mut layer = Layer::new(GRect::new(0, 0, 0, 0)).unwrap();
+        layer.set_update_proc(fill_circle);
+        center_layer.add_child(&mut layer);
+        layer
+    };
 
     let update = {
         let state = state.clone();
@@ -161,9 +170,26 @@ pub fn spin() -> Window {
     }
 
     window.set_appear_effect(Box::new(move || {
-        let timer = Timer::repeat(Duration::from_millis(300), update.clone()).unwrap();
+        let timer = Timer::repeat(Duration::from_millis(40), update.clone()).unwrap();
+        let mut compass_layer = compass_layer.clone();
+        APP.compass.subscribe(Box::new(move |angle| {
+            let angle = match angle {
+                CompassHeading::Invalid | CompassHeading::Unavailable => {
+                    log_c_str(c"compass unavailable/invalid");
+                    compass_layer.set_bounds(GRect::new(0, 0, 0, 0));
+                    return;
+                }
+                CompassHeading::Calibrating(angle) | CompassHeading::Calibrated(angle) => angle,
+            };
+            compass_layer.set_frame(GRect::new_on_circle(
+                compass_layer_bounds,
+                angle,
+                GSize::new(10, 10),
+            ));
+        }));
         Box::new(move || {
             timer.cancel();
+            APP.compass.unsubscribe();
         })
     }));
 
