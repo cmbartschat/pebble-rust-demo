@@ -25,6 +25,9 @@ pub fn time() -> Window {
     let mut battery_layer = TextLayer::new(GRect::new(0, 150, 200, 30)).unwrap();
     window.add_child(&mut battery_layer);
 
+    let mut bluetooth_layer = TextLayer::new(GRect::new(0, 180, 200, 30)).unwrap();
+    window.add_child(&mut bluetooth_layer);
+
     APP.set_tick_handler(TimeUnits::Second, move || {
         let now = Time::now();
         local_time_layer.set_text_bytes(now.to_local().format_hh_mm().as_bytes());
@@ -52,6 +55,12 @@ pub fn time() -> Window {
             )
             .unwrap()
         });
+
+        if APP.bluetooth_connection.peek() {
+            bluetooth_layer.set_text_c_str(c"Connected to bluetooth");
+        } else {
+            bluetooth_layer.set_text_c_str(c"Not connected to bluetooth");
+        }
     });
 
     window
