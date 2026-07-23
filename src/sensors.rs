@@ -4,7 +4,7 @@ use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
     APP, AccelAxis, AccelSamplingRate, GRect, TextLayer, Window,
     color::GCOLOR_WHITE,
-    fmt, hex_color,
+    fmt, hex_color, log_c_str,
     sys::{self},
 };
 
@@ -32,6 +32,19 @@ pub fn sensors() -> Window {
                 layer.set_text_c_str(c"Bluetooth: Connected");
             } else {
                 layer.set_text_c_str(c"Bluetooth: Not Connected");
+            }
+        }
+    };
+
+    let mut update_focus = {
+        let mut layer = TextLayer::new(GRect::new(0, offset, 200, 30)).unwrap();
+        offset += 30;
+        window.add_child(&mut layer);
+        move |focused: bool| {
+            if focused {
+                layer.set_text_c_str(c"Focused: true");
+            } else {
+                layer.set_text_c_str(c"Focused: false");
             }
         }
     };
@@ -69,6 +82,7 @@ pub fn sensors() -> Window {
         }));
         APP.bluetooth_connection
             .subscribe(Box::new(update_bluetooth.clone()));
+        update_focus(true); // Assumed
 
         APP.accel.tap_subscribe(Box::new({
             let weak_window = weak_window.clone();
@@ -89,11 +103,13 @@ pub fn sensors() -> Window {
         }));
         APP.accel.subscribe(1, Box::new(update_accel.clone()));
         APP.accel.set_sampling_rate(AccelSamplingRate::Hz10);
+        APP.focus.subscribe(Box::new(update_focus.clone()));
 
         Box::new(move || {
             APP.accel.unsubscribe();
             APP.bluetooth_connection.unsubscribe();
             APP.battery_state.unsubscribe();
+            APP.focus.unsubscribe();
         })
     }));
 
