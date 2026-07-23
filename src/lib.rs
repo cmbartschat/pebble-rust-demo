@@ -11,6 +11,7 @@ mod heap;
 mod move_box;
 mod nested_window;
 mod scroll;
+mod sensors;
 mod spin;
 mod time;
 mod windows;

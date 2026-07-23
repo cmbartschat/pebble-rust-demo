@@ -2,8 +2,9 @@ use pebble_rust_2026::Window;
 
 type WindowInfo = (&'static str, fn() -> Window);
 
-pub static WINDOWS: [WindowInfo; 9] = [
+pub static WINDOWS: [WindowInfo; 10] = [
     ("Heap", crate::heap::heap),
+    ("Sensors", crate::sensors::sensors),
     ("Nested", crate::nested_window::nested_window),
     ("Scroll", crate::scroll::scroll),
     ("Time", crate::time::time),
