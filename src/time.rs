@@ -1,3 +1,5 @@
+use core::ffi::c_uint;
+
 use alloc::string::String;
 use pebble_rust_2026::{APP, GRect, TextLayer, Time, TimeUnits, Window, color::GCOLOR_WHITE, fmt};
 
@@ -20,6 +22,9 @@ pub fn time() -> Window {
     let mut converted_utc_timestamp_layer = TextLayer::new(GRect::new(0, 120, 200, 30)).unwrap();
     window.add_child(&mut converted_utc_timestamp_layer);
 
+    let mut battery_layer = TextLayer::new(GRect::new(0, 150, 200, 30)).unwrap();
+    window.add_child(&mut battery_layer);
+
     APP.set_tick_handler(TimeUnits::Second, move || {
         let now = Time::now();
         local_time_layer.set_text_bytes(now.to_local().format_hh_mm().as_bytes());
@@ -36,6 +41,14 @@ pub fn time() -> Window {
             fmt!(
                 c"%ld",
                 Time::try_from(now.to_utc()).unwrap().epoch_seconds()
+            )
+            .unwrap()
+        });
+
+        battery_layer.set_text(&unsafe {
+            fmt!(
+                c"Battery: %d%%",
+                APP.battery_state.peek().charge_percent as c_uint
             )
             .unwrap()
         });
