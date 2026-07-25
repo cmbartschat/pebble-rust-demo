@@ -52,7 +52,7 @@ pub fn spin() -> Window {
 
     for _ in 0..8 {
         let mut layer = Layer::new(GRect::new(0, 0, 10, 10)).unwrap();
-        layer.set_update_proc(fill_circle);
+        layer.set_raw_update_proc(fill_circle);
         center_layer.add_child(&mut layer);
         circle_layers.push(layer);
     }
@@ -61,7 +61,7 @@ pub fn spin() -> Window {
 
     let compass_layer = {
         let mut layer = Layer::new(GRect::new(0, 0, 0, 0)).unwrap();
-        layer.set_update_proc(fill_circle);
+        layer.set_raw_update_proc(fill_circle);
         center_layer.add_child(&mut layer);
         layer
     };

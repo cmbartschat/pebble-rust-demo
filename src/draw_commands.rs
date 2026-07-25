@@ -2,10 +2,10 @@ use core::{cell::RefCell, time::Duration};
 
 use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
-    APP, Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, Mutex, MutexToken, Random,
-    TextLayer, TouchEvent, Window,
+    APP, Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, MutexToken, Random, TextLayer,
+    TouchEvent, Window,
     color::{GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_WHITE},
-    hex_color, resource_ids, sys,
+    hex_color, resource_ids,
 };
 
 struct Bird {
@@ -32,39 +32,11 @@ impl Bird {
 
 resource_ids!(resource_ids);
 
-static BIRDS: Mutex<RefCell<Vec<Bird>>> = Mutex::new(RefCell::new(Vec::new()));
-
-extern "C" fn draw_to_layer(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
-    let mut ctx = GContext::from_raw(ctx).unwrap();
-
-    ctx.set_fill_color(hex_color!("#aff"));
-    ctx.fill_rect(GRect::new(0, 0, 200, 100));
-
-    ctx.set_fill_color(hex_color!("#ffff00"));
-    ctx.fill_circle(GPoint { x: 50, y: 50 }, 25);
-
-    ctx.set_fill_color(GCOLOR_GREEN);
-    ctx.fill_rect(GRect::new(0, 100, 200, 150));
-
-    MutexToken::with(|t| {
-        for fly in BIRDS.borrow(t).iter() {
-            fly.draw(&mut ctx);
-        }
-    });
-
-    ctx.set_fill_color(GCOLOR_SUNSET_ORANGE);
-    ctx.fill_round_rect(GRect::new(140, 100, 20, 100), 3);
-
-    ctx.set_fill_color(GCOLOR_DARK_GREEN);
-    ctx.fill_round_rect(GRect::new(120, 50, 60, 100), 10);
-}
-
 pub fn draw_commands() -> Window {
     let mut window = Window::new().unwrap();
     window.set_background_color(GCOLOR_WHITE);
 
     let mut custom_layer = Layer::new(window.get_bounds()).unwrap();
-    custom_layer.set_update_proc(draw_to_layer);
     window.add_child(&mut custom_layer);
 
     {
@@ -86,13 +58,41 @@ pub fn draw_commands() -> Window {
         Bitmap::from_resource(resource_ids::BIRD3).unwrap(),
     ];
 
-    let push_bird = Rc::new(RefCell::new(move |position: GPoint| {
-        let sprite =
-            bird_sprites[Random::new().uniform(bird_sprites.len() as u32) as usize].clone();
+    let birds = Rc::new(RefCell::new(Vec::<Bird>::new()));
 
-        MutexToken::with(|t| BIRDS.borrow_mut(t).push(Bird::new(position, sprite)));
-        custom_layer.mark_dirty();
-    }));
+    custom_layer.set_update_proc({
+        let birds = birds.clone();
+        Box::new(move |_, mut ctx| {
+            ctx.set_fill_color(hex_color!("#aff"));
+            ctx.fill_rect(GRect::new(0, 0, 200, 100));
+
+            ctx.set_fill_color(hex_color!("#ffff00"));
+            ctx.fill_circle(GPoint { x: 50, y: 50 }, 25);
+
+            ctx.set_fill_color(GCOLOR_GREEN);
+            ctx.fill_rect(GRect::new(0, 100, 200, 150));
+
+            for fly in birds.borrow().iter() {
+                fly.draw(&mut ctx);
+            }
+
+            ctx.set_fill_color(GCOLOR_SUNSET_ORANGE);
+            ctx.fill_round_rect(GRect::new(140, 100, 20, 100), 3);
+
+            ctx.set_fill_color(GCOLOR_DARK_GREEN);
+            ctx.fill_round_rect(GRect::new(120, 50, 60, 100), 10);
+        })
+    });
+
+    let push_bird = Rc::new({
+        RefCell::new(move |position: GPoint| {
+            let sprite =
+                bird_sprites[Random::new().uniform(bird_sprites.len() as u32) as usize].clone();
+
+            MutexToken::with(|_t| birds.borrow_mut().push(Bird::new(position, sprite)));
+            custom_layer.mark_dirty();
+        })
+    });
 
     let push_bird_1 = push_bird.clone();
     window.set_click_provider({
@@ -144,12 +144,6 @@ pub fn draw_commands() -> Window {
             APP.touch.unsubscribe();
         })
     }));
-
-    window.set_unload_handler(|| {
-        MutexToken::with(|t| {
-            BIRDS.borrow_mut(t).clear();
-        });
-    });
 
     window
 }
