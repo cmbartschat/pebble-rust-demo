@@ -4,7 +4,7 @@ use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
     APP, AccelAxis, AccelSamplingRate, GRect, TextLayer, Window,
     color::GCOLOR_WHITE,
-    fmt, hex_color, log_c_str,
+    fmt, hex_color,
     sys::{self},
 };
 
