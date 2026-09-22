@@ -10,7 +10,7 @@ doctest = false
 bench = false
 
 [dependencies]
-pebble_rust_2026 = { path = "../pebble-rust-2026" }
+pebble_rust_2026 = { path = "../pebble-rust-2026/pebble-rust" }
 # This is set up for local development, to fetch from github use this format:
 # pebble_rust_2026 = { git = "https://github.com/cmbartschat/pebble-rust-2026.git", rev = "2aa7fa68b363019c94c85d28769cf1d0b9c5b661" }
 

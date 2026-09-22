@@ -3,6 +3,11 @@
 
 extern crate alloc;
 
+use pebble_rust_2026::MallocAllocator;
+
+#[global_allocator]
+static ALLOCATOR: MallocAllocator = MallocAllocator;
+
 mod app;
 mod bitmaps;
 mod draw_commands;
