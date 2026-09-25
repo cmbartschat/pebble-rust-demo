@@ -8,10 +8,10 @@ Showcase for the capabilities of https://github.com/cmbartschat/pebble-rust-2026
 
 1. Cargo: https://rustup.rs/
 2. Pebble SDK: https://developer.repebble.com/sdk/
+3. Cargo Pebble: `cargo install --git https://codeberg.org/filmroellchen/cargo-pebble.git`
+4. Rust targets: `rustup target add thumbv7m-none-eabi thumbv7em-none-eabi thumbv8m.main-none-eabi`
 
 ```sh
-rustup target add thumbv8m.main-none-eabi
-pebble clean
-pebble build
+cargo pebble build
 pebble install --emulator emery
 ```
