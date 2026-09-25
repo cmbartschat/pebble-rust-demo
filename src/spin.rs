@@ -25,7 +25,7 @@ resource_ids!(resource_ids);
 static COLOR: Mutex<Cell<GColor>> = Mutex::new(Cell::new(GCOLOR_BLACK));
 
 extern "C" fn fill_circle(_layer: *mut sys::Layer, ctx: *mut sys::GContext) {
-    let mut ctx = GContext::from_raw(ctx).unwrap();
+    let mut ctx = unsafe { GContext::from_raw(ctx) }.unwrap();
     ctx.set_fill_color(COLOR.get());
     ctx.fill_circle(GPoint { x: 5, y: 5 }, 4);
 
@@ -52,7 +52,7 @@ pub fn spin() -> Window {
 
     for _ in 0..8 {
         let mut layer = Layer::new(GRect::new(0, 0, 10, 10)).unwrap();
-        layer.set_raw_update_proc(fill_circle);
+        layer.set_raw_update_handler(fill_circle);
         center_layer.add_child(&mut layer);
         circle_layers.push(layer);
     }
@@ -61,7 +61,7 @@ pub fn spin() -> Window {
 
     let compass_layer = {
         let mut layer = Layer::new(GRect::new(0, 0, 0, 0)).unwrap();
-        layer.set_raw_update_proc(fill_circle);
+        layer.set_raw_update_handler(fill_circle);
         center_layer.add_child(&mut layer);
         layer
     };

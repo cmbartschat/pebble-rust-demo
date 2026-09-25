@@ -60,7 +60,7 @@ pub fn draw_commands() -> Window {
 
     let birds = Rc::new(RefCell::new(Vec::<Bird>::new()));
 
-    custom_layer.set_update_proc({
+    custom_layer.set_update_handler({
         let birds = birds.clone();
         Box::new(move |_, mut ctx| {
             ctx.set_fill_color(hex_color!("#aff"));

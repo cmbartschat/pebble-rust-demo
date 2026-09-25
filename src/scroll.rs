@@ -86,8 +86,8 @@ pub fn scroll() -> Window {
                                 log_c_str(c"Unexpected: Scroll failed to upgrade");
                                 return;
                             };
-                            let hidden = !scroll.get_paging();
-                            scroll.set_paging(hidden);
+                            let hidden = !scroll.get_paging_enabled();
+                            scroll.set_paging_enabled(hidden);
                         }
                     },
                     None,

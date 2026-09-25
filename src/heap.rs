@@ -58,7 +58,7 @@ pub fn heap() -> Window {
                 windows.reverse();
 
                 for w in windows.iter_mut() {
-                    APP.show_immediate(w.retain());
+                    APP.show_immediate(w.clone());
                 }
 
                 Timer::once(Duration::from_millis(1000), move || {

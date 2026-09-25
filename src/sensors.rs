@@ -2,7 +2,7 @@ use core::ffi::{c_int, c_uint};
 
 use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
-    APP, AccelAxis, AccelSamplingRate, GRect, TextLayer, Window,
+    APP, AccelerometerAxis, AccelerometerSamplingRate, GRect, TextLayer, Window,
     color::GCOLOR_WHITE,
     fmt, hex_color,
     sys::{self},
@@ -73,7 +73,7 @@ pub fn sensors() -> Window {
     window.set_appear_effect(Box::new(move || {
         update_battery(APP.battery_state.peek().charge_percent);
         update_bluetooth(APP.bluetooth_connection.peek());
-        let data: Vec<_> = APP.accel.peek().into_iter().collect();
+        let data: Vec<_> = APP.accelerometer.peek().into_iter().collect();
         update_accel(&data);
 
         APP.battery_state.subscribe(Box::new({
@@ -84,29 +84,31 @@ pub fn sensors() -> Window {
             .subscribe(Box::new(update_bluetooth.clone()));
         update_focus(true); // Assumed
 
-        APP.accel.tap_subscribe(Box::new({
+        APP.accelerometer.subscribe_to_tap(Box::new({
             let weak_window = weak_window.clone();
             move |axis| {
                 let Some(mut window) = weak_window.upgrade() else {
                     return;
                 };
                 let color = match axis {
-                    AccelAxis::PosX => hex_color!("#f0f"),
-                    AccelAxis::PosY => hex_color!("#ff0"),
-                    AccelAxis::PosZ => hex_color!("#0ff"),
-                    AccelAxis::NegX => hex_color!("#f00"),
-                    AccelAxis::NegY => hex_color!("#0f0"),
-                    AccelAxis::NegZ => hex_color!("#00f"),
+                    AccelerometerAxis::PosX => hex_color!("#f0f"),
+                    AccelerometerAxis::PosY => hex_color!("#ff0"),
+                    AccelerometerAxis::PosZ => hex_color!("#0ff"),
+                    AccelerometerAxis::NegX => hex_color!("#f00"),
+                    AccelerometerAxis::NegY => hex_color!("#0f0"),
+                    AccelerometerAxis::NegZ => hex_color!("#00f"),
                 };
                 window.set_background_color(color);
             }
         }));
-        APP.accel.subscribe(1, Box::new(update_accel.clone()));
-        APP.accel.set_sampling_rate(AccelSamplingRate::Hz10);
+        APP.accelerometer.subscribe(Box::new(update_accel.clone()));
+        APP.accelerometer
+            .set_sampling_rate(AccelerometerSamplingRate::Hz10);
         APP.focus.subscribe(Box::new(update_focus.clone()));
 
         Box::new(move || {
-            APP.accel.unsubscribe();
+            APP.accelerometer.unsubscribe();
+            APP.accelerometer.unsubscribe_from_tap();
             APP.bluetooth_connection.unsubscribe();
             APP.battery_state.unsubscribe();
             APP.focus.unsubscribe();
