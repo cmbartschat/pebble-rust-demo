@@ -113,9 +113,9 @@ pub fn draw_commands() -> Window {
 
                         let position = loop {
                             let position = GPoint {
-                                x: Random::new().uniform(bounds.size.w as u32) as i16 - 8,
-                                y: Random::new().uniform(120) as i16 - 8,
-                            };
+                                x: Random::new().uniform(bounds.size.w as u32) as i16,
+                                y: Random::new().uniform(120) as i16,
+                            } - GPoint::new(8, 8);
 
                             if !excluded_bounds.contains_point(position) {
                                 break position;
