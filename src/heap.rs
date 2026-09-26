@@ -30,7 +30,7 @@ pub fn heap() -> Window {
         let total = used + free;
         used_layer.set_text(&unsafe { fmt!(c"Used:  %lu", used) }.unwrap());
         free_layer.set_text(&unsafe { fmt!(c"Free:  %lu", free) }.unwrap());
-        total_layer.set_text(&unsafe { fmt!(c"Total: %lu", total) }.unwrap());
+        total_layer.set_text(&unsafe { fmt!(c"Total: %ld", total) }.unwrap());
 
         true
     };
