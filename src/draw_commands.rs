@@ -2,11 +2,12 @@ use core::{cell::RefCell, time::Duration};
 
 use alloc::{boxed::Box, rc::Rc, vec::Vec};
 use pebble_rust_2026::{
-    APP, Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, MutexToken, Random, TextLayer,
+    APP, Bitmap, Button, CompOp, GContext, GPoint, GRect, Layer, MutexToken, Rng, TextLayer,
     TouchEvent, Window,
     color::{GCOLOR_DARK_GREEN, GCOLOR_GREEN, GCOLOR_SUNSET_ORANGE, GCOLOR_WHITE},
     hex_color, resource_ids,
 };
+use rand::{RngExt, seq::IndexedRandom};
 
 struct Bird {
     bounds: GRect,
@@ -86,8 +87,7 @@ pub fn draw_commands() -> Window {
 
     let push_bird = Rc::new({
         RefCell::new(move |position: GPoint| {
-            let sprite =
-                bird_sprites[Random::new().uniform(bird_sprites.len() as u32) as usize].clone();
+            let sprite = bird_sprites.choose(&mut Rng).unwrap().clone();
 
             MutexToken::with(|_t| birds.borrow_mut().push(Bird::new(position, sprite)));
             custom_layer.mark_dirty();
@@ -113,9 +113,9 @@ pub fn draw_commands() -> Window {
 
                         let position = loop {
                             let position = GPoint {
-                                x: Random::new().uniform(bounds.size.w as u32) as i16 - 8,
-                                y: Random::new().uniform(120) as i16 - 8,
-                            };
+                                x: Rng.random_range(0..bounds.size.w),
+                                y: Rng.random_range(0..120),
+                            } - GPoint::new(8, 8);
 
                             if !excluded_bounds.contains_point(position) {
                                 break position;
