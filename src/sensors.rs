@@ -2,7 +2,8 @@ use core::ffi::{c_int, c_uint};
 
 use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
-    APP, AccelerometerAxis, AccelerometerSamplingRate, GRect, TextLayer, Window,
+    APP, AccelerometerAxis, AccelerometerSamplingRate, BatteryChargeState, GRect, TextLayer,
+    Window,
     color::GCOLOR_WHITE,
     fmt, hex_color,
     sys::{self},
@@ -76,15 +77,16 @@ pub fn sensors() -> Window {
         let data: Vec<_> = APP.accelerometer.peek().into_iter().collect();
         update_accel(&data);
 
-        APP.battery_state.subscribe(Box::new({
+        let battery = APP.battery_state.subscribe({
             let mut update_battery = update_battery.clone();
-            move |b| update_battery(b.charge_percent)
-        }));
-        APP.bluetooth_connection
+            move |b: BatteryChargeState| update_battery(b.charge_percent)
+        });
+        let bluetooth = APP
+            .bluetooth_connection
             .subscribe(Box::new(update_bluetooth.clone()));
         update_focus(true); // Assumed
 
-        APP.accelerometer.subscribe_to_tap(Box::new({
+        let accel_tap = APP.accelerometer.subscribe_to_tap(Box::new({
             let weak_window = weak_window.clone();
             move |axis| {
                 let Some(mut window) = weak_window.upgrade() else {
@@ -101,17 +103,17 @@ pub fn sensors() -> Window {
                 window.set_background_color(color);
             }
         }));
-        APP.accelerometer.subscribe(Box::new(update_accel.clone()));
+        let accel = APP.accelerometer.subscribe(Box::new(update_accel.clone()));
         APP.accelerometer
             .set_sampling_rate(AccelerometerSamplingRate::Hz10);
-        APP.focus.subscribe(Box::new(update_focus.clone()));
+        let focus = APP.focus.subscribe(Box::new(update_focus.clone()));
 
         Box::new(move || {
-            APP.accelerometer.unsubscribe();
-            APP.accelerometer.unsubscribe_from_tap();
-            APP.bluetooth_connection.unsubscribe();
-            APP.battery_state.unsubscribe();
-            APP.focus.unsubscribe();
+            battery.remove();
+            bluetooth.remove();
+            accel.remove();
+            accel_tap.remove();
+            focus.remove();
         })
     }));
 
