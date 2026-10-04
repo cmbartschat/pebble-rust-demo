@@ -10,6 +10,7 @@ static ALLOCATOR: MallocAllocator = MallocAllocator;
 
 mod app;
 mod bitmaps;
+mod dictation;
 mod draw_commands;
 mod flash;
 mod heap;
