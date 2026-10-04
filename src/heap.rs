@@ -51,19 +51,18 @@ pub fn heap() -> Window {
             Button::Select,
             |_| {
                 let mut windows = vec![];
-                for (_, f) in WINDOWS {
-                    windows.push(f());
-                }
-
-                windows.reverse();
-
-                for w in windows.iter_mut() {
-                    APP.show_immediate(w.clone());
+                // Heap is first in the list, but to keep it on screen, we want to reverse the list so we push it last.
+                for (_, f) in WINDOWS.iter().rev() {
+                    let w = f();
+                    windows.push(w.downgrade());
+                    APP.show_immediate(w);
                 }
 
                 Timer::once(Duration::from_millis(1000), move || {
-                    for mut w in windows.into_iter() {
-                        APP.hide_immediate(&mut w);
+                    for w in windows.into_iter() {
+                        if let Some(mut w) = w.upgrade() {
+                            APP.hide_immediate(&mut w);
+                        }
                     }
                 });
             },
