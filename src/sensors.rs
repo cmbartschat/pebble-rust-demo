@@ -99,6 +99,7 @@ pub fn sensors() -> Window {
                     AccelerometerAxis::NegX => hex_color!("#f00"),
                     AccelerometerAxis::NegY => hex_color!("#0f0"),
                     AccelerometerAxis::NegZ => hex_color!("#00f"),
+                    AccelerometerAxis::Unspecified => hex_color!("#fa0"),
                 };
                 window.set_background_color(color);
             }
