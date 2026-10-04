@@ -171,7 +171,7 @@ pub fn spin() -> Window {
     window.set_appear_effect(Box::new(move || {
         let timer = Timer::repeat(Duration::from_millis(40), update.clone()).unwrap();
         let mut compass_layer = compass_layer.clone();
-        APP.compass.subscribe(Box::new(move |angle| {
+        let compass_callback = APP.compass.subscribe(Box::new(move |angle| {
             let angle = match angle {
                 CompassHeading::Invalid | CompassHeading::Unavailable => {
                     log_c_str(c"compass unavailable/invalid");
@@ -188,7 +188,7 @@ pub fn spin() -> Window {
         }));
         Box::new(move || {
             timer.cancel();
-            APP.compass.unsubscribe();
+            compass_callback.cancel();
         })
     }));
 

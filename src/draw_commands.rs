@@ -62,7 +62,7 @@ pub fn draw_commands() -> Window {
 
     custom_layer.set_update_handler({
         let birds = birds.clone();
-        Box::new(move |_, mut ctx| {
+        move |_, mut ctx| {
             ctx.set_fill_color(hex_color!("#aff"));
             ctx.fill_rect(GRect::new(0, 0, 200, 100));
 
@@ -81,7 +81,7 @@ pub fn draw_commands() -> Window {
 
             ctx.set_fill_color(GCOLOR_DARK_GREEN);
             ctx.fill_round_rect(GRect::new(120, 50, 60, 100), 10);
-        })
+        }
     });
 
     let push_bird = Rc::new({
@@ -131,7 +131,7 @@ pub fn draw_commands() -> Window {
     });
 
     window.set_appear_effect(Box::new(move || {
-        APP.touch.subscribe(Box::new({
+        let touch_callback = APP.touch.subscribe(Box::new({
             let push_bird = push_bird.clone();
             move |event| {
                 if let TouchEvent::TouchDown(position) = event {
@@ -140,8 +140,8 @@ pub fn draw_commands() -> Window {
             }
         }));
 
-        Box::new(|| {
-            APP.touch.unsubscribe();
+        Box::new(move || {
+            touch_callback.cancel();
         })
     }));
 
