@@ -1,6 +1,3 @@
-use core::ffi::c_uint;
-
-use alloc::string::String;
 use pebble_rust_2026::{APP, GRect, TextLayer, Time, TimeUnits, Window, color::GCOLOR_WHITE, fmt};
 
 pub fn time() -> Window {
@@ -32,29 +29,17 @@ pub fn time() -> Window {
         let now = Time::now();
         local_time_layer.set_text_bytes(now.to_local().format_hh_mm().as_bytes());
         utc_time_layer.set_text_bytes(now.to_utc().format_hh_mm().as_bytes());
-        now_timestamp_layer.set_text(&unsafe { fmt!(c"%ld", now.epoch_seconds()).unwrap() });
-        converted_local_timestamp_layer.set_text(&unsafe {
-            fmt!(
-                c"%ld",
-                Time::try_from(now.to_local()).unwrap().epoch_seconds()
-            )
-            .unwrap_or_else(|| String::from("<fail>"))
-        });
-        converted_utc_timestamp_layer.set_text(&unsafe {
-            fmt!(
-                c"%ld",
-                Time::try_from(now.to_utc()).unwrap().epoch_seconds()
-            )
-            .unwrap()
-        });
+        now_timestamp_layer.set_text(&fmt!("{}", now.epoch_seconds()));
+        converted_local_timestamp_layer.set_text(&fmt!(
+            "{}",
+            Time::try_from(now.to_local()).unwrap().epoch_seconds()
+        ));
+        converted_utc_timestamp_layer.set_text(&fmt!(
+            "{}",
+            Time::try_from(now.to_utc()).unwrap().epoch_seconds()
+        ));
 
-        battery_layer.set_text(&unsafe {
-            fmt!(
-                c"Battery: %d%%",
-                APP.battery_state.peek().charge_percent as c_uint
-            )
-            .unwrap()
-        });
+        battery_layer.set_text(&{ fmt!("Battery: {}%", APP.battery_state.peek().charge_percent) });
 
         if APP.bluetooth_connection.peek() {
             bluetooth_layer.set_text_c_str(c"Connected to bluetooth");

@@ -28,9 +28,9 @@ pub fn heap() -> Window {
         let used = heap::bytes_used();
         let free = heap::bytes_free();
         let total = used + free;
-        used_layer.set_text(&unsafe { fmt!(c"Used:  %lu", used) }.unwrap());
-        free_layer.set_text(&unsafe { fmt!(c"Free:  %lu", free) }.unwrap());
-        total_layer.set_text(&unsafe { fmt!(c"Total: %lu", total) }.unwrap());
+        used_layer.set_text(&fmt!("Used:  {}", used));
+        free_layer.set_text(&fmt!("Free:  {}", free));
+        total_layer.set_text(&fmt!("Total: {}", total));
 
         true
     };

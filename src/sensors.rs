@@ -1,12 +1,7 @@
-use core::ffi::{c_int, c_uint};
-
 use alloc::{boxed::Box, vec::Vec};
 use pebble_rust_2026::{
-    APP, AccelerometerAxis, AccelerometerSamplingRate, BatteryChargeState, GRect, TextLayer,
-    Window,
-    color::GCOLOR_WHITE,
-    fmt, hex_color,
-    sys::{self},
+    APP, AccelerometerAxis, AccelerometerData, AccelerometerSamplingRate, BatteryChargeState,
+    GRect, TextLayer, Window, color::GCOLOR_WHITE, fmt, hex_color,
 };
 
 pub fn sensors() -> Window {
@@ -20,7 +15,7 @@ pub fn sensors() -> Window {
         window.add_child(&mut layer);
         offset += 30;
         move |charge_percent: u8| {
-            layer.set_text(&unsafe { fmt!(c"Battery: %d%%", charge_percent as c_uint).unwrap() });
+            layer.set_text(&fmt!("Battery: {}%", charge_percent));
         }
     };
 
@@ -53,17 +48,12 @@ pub fn sensors() -> Window {
     let mut update_accel = {
         let mut layer = TextLayer::new(GRect::new(0, offset, 200, 30)).unwrap();
         window.add_child(&mut layer);
-        move |data: &[sys::AccelData]| {
+        move |data: &[AccelerometerData]| {
             if let Some(data) = data.last() {
-                layer.set_text(&unsafe {
-                    fmt!(
-                        c"Accel: (%i, %i, %i)",
-                        data.x as c_int,
-                        data.y as c_int,
-                        data.z as c_int
-                    )
-                    .unwrap()
-                });
+                let x = data.x;
+                let y = data.y;
+                let z = data.z;
+                layer.set_text(&fmt!("Accel: ({}, {}, {})", x, y, z));
             } else {
                 layer.set_text_c_str(c"Accelerometer: Unavailable");
             }

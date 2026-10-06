@@ -1,5 +1,5 @@
 use alloc::boxed::Box;
-use pebble_rust_2026::{APP, Button, GColor, TextLayer, Window, color, fmt, hex_color, log_c_str};
+use pebble_rust_2026::{APP, Button, GColor, TextLayer, Window, color, fmt, hex_color, warn};
 
 static COLORS: [GColor; 3] = [hex_color!("#ff0"), hex_color!("#f0f"), hex_color!("#0ff")];
 
@@ -16,13 +16,13 @@ fn _nested_window(i: usize) -> Window {
         let window = window.downgrade();
         move || {
             let Some(mut window) = window.upgrade() else {
-                log_c_str(c"fill has no window to use");
+                warn!("fill has no window to use");
                 return;
             };
 
             let mut text_layer = TextLayer::new(bounds).unwrap();
             text_layer.set_background_color(COLORS[i % COLORS.len()]);
-            text_layer.set_text(&unsafe { fmt!(c"Level %u", i).unwrap() });
+            text_layer.set_text(&fmt!("Level {}", i));
 
             window.add_child(&mut text_layer);
         }

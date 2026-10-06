@@ -12,7 +12,7 @@ use pebble_rust_2026::{
         GCOLOR_BLACK, GCOLOR_CLEAR, GCOLOR_GREEN, GCOLOR_RED, GCOLOR_SHOCKING_PINK,
         GCOLOR_VERY_LIGHT_BLUE, GCOLOR_WHITE, GCOLOR_YELLOW,
     },
-    hex_color, log_c_str, resource_ids, sys,
+    hex_color, resource_ids, sys, warn,
 };
 
 struct SpinState {
@@ -174,7 +174,7 @@ pub fn spin() -> Window {
         let compass_callback = APP.compass.subscribe(Box::new(move |angle| {
             let angle = match angle {
                 CompassHeading::Invalid | CompassHeading::Unavailable => {
-                    log_c_str(c"compass unavailable/invalid");
+                    warn!("compass unavailable/invalid");
                     compass_layer.set_bounds(GRect::new(0, 0, 0, 0));
                     return;
                 }

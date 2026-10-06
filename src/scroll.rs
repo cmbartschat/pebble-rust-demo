@@ -1,6 +1,6 @@
 use pebble_rust_2026::{
     Button, ContentIndicatorConfig, ContentIndicatorDirection, GAlign, GRect, GSize, Layer,
-    ScrollLayer, TextLayer, Window, hex_color, log_c_str,
+    ScrollLayer, TextLayer, Window, hex_color, trace, warn,
 };
 
 pub fn scroll() -> Window {
@@ -67,7 +67,7 @@ pub fn scroll() -> Window {
                 ContentIndicatorConfig::basic(down_layer),
             )
             .unwrap();
-        log_c_str(c"content indicator initialized");
+        trace!("content indicator initialized");
     });
 
     scroll.set_content_size(GSize::new(200, offset_y));
@@ -83,7 +83,7 @@ pub fn scroll() -> Window {
                         let scroll = scroll.clone();
                         move |_| {
                             let Some(mut scroll) = scroll.upgrade() else {
-                                log_c_str(c"Unexpected: Scroll failed to upgrade");
+                                warn!("Unexpected: Scroll failed to upgrade");
                                 return;
                             };
                             let hidden = !scroll.get_paging_enabled();

@@ -4,7 +4,7 @@ use alloc::rc::Rc;
 use pebble_rust_2026::{
     Button, ClickRecognizer, GPoint, GRect, TextLayer, Window,
     color::{GCOLOR_GREEN, GCOLOR_WHITE},
-    log_c_str,
+    log::info,
 };
 
 pub fn move_box() -> Window {
@@ -52,7 +52,7 @@ pub fn move_box() -> Window {
         let current_direction = current_direction.clone();
         move |c: &ClickRecognizer| {
             let mut box_frame = box_frame.borrow_mut();
-            log_c_str(c"got input");
+            info!("got input");
             let offset = 10 * if c.button() == Button::Up { 1 } else { -1 };
             match *current_direction.borrow() {
                 Direction::Horizontal => {

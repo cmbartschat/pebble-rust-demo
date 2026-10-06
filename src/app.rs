@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
-use pebble_rust_2026::{
-    APP, SimpleMenuItem, SimpleMenuLayer, SimpleMenuSection, Window, log_c_str,
-};
+use pebble_rust_2026::{APP, SimpleMenuItem, SimpleMenuLayer, SimpleMenuSection, Window, info};
 
 use crate::windows::WINDOWS;
 
@@ -27,5 +25,5 @@ pub fn run_app() {
 
     APP.event_loop();
 
-    log_c_str(c"finished loop");
+    info!("finished loop");
 }
